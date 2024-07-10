@@ -1,0 +1,41 @@
+/* body.css */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  background-color: #787a7b;
+  color: #000000;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.container h2 {
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+}
+
+.container p {
+  margin-bottom: 20px;
+}
+
+.container button {
+  cursor: pointer;
+  background-color: #3cf6f6;
+  color: #000000;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  margin-right: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.container button:hover {
+  background-color: #09536b;
+}
