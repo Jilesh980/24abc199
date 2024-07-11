@@ -14,6 +14,7 @@ export const getActivities = async () => {
   }
 };
 
+
 // Function to fetch a specific call by ID
 export const getActivityById = async (id) => {
   try {
