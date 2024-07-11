@@ -1,24 +1,25 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import ReactDOM from 'react-dom';
 import Header from './Header.jsx';
-import { getActivities, updateActivity, resetCalls } from './api'; // Import API functions
 
 const App = () => {
   const [calls, setCalls] = useState([]);
   const [selectedCall, setSelectedCall] = useState(null);
   const [showArchived, setShowArchived] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchCalls = async () => {
       try {
-        const data = await getActivities();
-        setCalls(data);
+        const apiUrl = 'https://aircall-backend.onrender.com/activities';
+        const response = await axios.get(apiUrl);
+        setCalls(response.data);
       } catch (error) {
-        console.error('Error fetching call data:', error);
+        setError(error.message);
       }
     };
 
-    
     fetchCalls();
   }, []);
 
@@ -28,24 +29,23 @@ const App = () => {
 
   const handleArchiveCall = async (id) => {
     try {
-      // Update locally first
       const updatedCalls = calls.map(call =>
         call.id === id ? { ...call, is_archived: !call.is_archived } : call
       );
       setCalls(updatedCalls);
-
-      // Update on the server
-      await updateActivity(id, { is_archived: !calls.find(call => call.id === id).is_archived });
+      const apiUrl = `https://aircall-backend.onrender.com/activities/${id}`;
+      await axios.patch(apiUrl, { is_archived: !updatedCalls.find(call => call.id === id).is_archived });
     } catch (error) {
-      console.error('Error updating call:', error);
+      console.error('Error toggling archive status:', error);
     }
   };
 
   const handleArchiveAll = async () => {
     try {
-      await resetCalls(); // Assuming this resets all calls to initial state
       const updatedCalls = calls.map(call => ({ ...call, is_archived: true }));
       setCalls(updatedCalls);
+      const apiUrl = 'https://aircall-backend.onrender.com/reset';
+      await axios.patch(apiUrl, { is_archived: true });
     } catch (error) {
       console.error('Error archiving all calls:', error);
     }
@@ -53,9 +53,10 @@ const App = () => {
 
   const handleUnarchiveAll = async () => {
     try {
-      await resetCalls(); // Assuming this resets all calls to initial state
       const updatedCalls = calls.map(call => ({ ...call, is_archived: false }));
       setCalls(updatedCalls);
+      const apiUrl = 'https://aircall-backend.onrender.com/reset';
+      await axios.patch(apiUrl, { is_archived: false });
     } catch (error) {
       console.error('Error unarchiving all calls:', error);
     }
@@ -67,10 +68,11 @@ const App = () => {
     <div className='container'>
       <Header />
       <div className="container-view">
+        {error && <p>Error fetching calls: {error}</p>}
         {selectedCall ? (
           <div>
-            <h2>{selectedCall.title}</h2>
-            <p>{selectedCall.description}</p>
+            <h2>{selectedCall.from} ➔ {selectedCall.to}</h2>
+            <p>{selectedCall.direction} Call {selectedCall.duration} seconds ago</p>
             <button onClick={() => handleArchiveCall(selectedCall.id)}>
               {selectedCall.is_archived ? 'Unarchive' : 'Archive'}
             </button>
@@ -90,9 +92,9 @@ const App = () => {
                   <span onClick={() => handleSelectCall(call)}>
                     {call.direction === 'inbound' && <i className="fa fa-arrow-down" style={{ marginRight: '10px', color: 'green' }}></i>}
                     {call.direction === 'outbound' && <i className="fa fa-arrow-up" style={{ marginRight: '10px', color: 'blue' }}></i>}
-                    {call.from} to {call.to}
+                    {call.from} ➔ {call.to}
                   </span>
-                  <span>{call.description}</span>
+                  <span>{call.direction} Call {call.duration} seconds ago</span>
                   <button onClick={() => handleArchiveCall(call.id)}>
                     {call.is_archived ? 'Unarchive' : 'Archive'}
                   </button>
